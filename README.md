@@ -73,7 +73,7 @@ O público é idoso, então a interface segue os requisitos de usabilidade do pr
 ```
 VitaMed/
 ├── index.html
-├── estilo.css
+├── style.css
 ├── app.js
 └── README.md
 ```
