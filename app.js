@@ -93,42 +93,54 @@ function formatRemaining(ms) {
     const minutes = Math.ceil(ms / 60000);
     return `${minutes} minuto(s)`;
 }
-function submitLogin(role) {
+
+async function submitLogin(role) {
     const email = $('loginEmail').value.trim();
     const password = $('loginPass').value;
-    const remaining = lockRemaining();
 
-    if (remaining > 0) {
-        alert(`Acesso temporariamente bloqueado. Tente novamente em ${formatRemaining(remaining)}.`);
-        return;
-    }
     if (!email || !password) {
-        alert('Preencha o e-mail/telefone e a senha.');
+        alert('Preencha o e-mail e a senha.');
         return;
     }
 
-    const account = getAccount();
-    const registeredContact = account.contact || '';
-    const contactMatches = !registeredContact || registeredContact.toLowerCase() === email.toLowerCase();
+    try {
+        const resposta = await fetch('http://localhost:3000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                senha: password,
+                tipo_usuario: role
+            })
+        });
 
-    if (password !== demoPassword || !contactMatches) {
-        let failures = Number(sessionStorage.getItem(STORAGE.failures) || 0) + 1;
-        sessionStorage.setItem(STORAGE.failures, String(failures));
-        const left = MAX_ATTEMPTS - failures;
-        if (failures >= MAX_ATTEMPTS) {
-            sessionStorage.setItem(STORAGE.lockUntil, String(Date.now() + LOCK_DURATION_MS));
-            sessionStorage.setItem(STORAGE.failures, '0');
-            alert('Muitas tentativas incorretas. O acesso foi bloqueado por 15 minutos nesta demonstração.');
-        } else {
-            alert(`Dados incorretos. Restam ${left} tentativa(s) antes do bloqueio.`);
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(resultado.mensagem || 'Não foi possível entrar.');
+            return;
         }
-        return;
-    }
 
-    sessionStorage.removeItem(STORAGE.failures);
-    sessionStorage.removeItem(STORAGE.lockUntil);
-    login(role);
+        localStorage.setItem(STORAGE.account, JSON.stringify({
+            id: resultado.usuario.id,
+            name: resultado.usuario.nome,
+            contact: resultado.usuario.email,
+            role: resultado.usuario.tipo_usuario
+        }));
+
+        sessionStorage.removeItem(STORAGE.failures);
+        sessionStorage.removeItem(STORAGE.lockUntil);
+
+        login(resultado.usuario.tipo_usuario);
+
+    } catch (erro) {
+        console.error('Erro no login:', erro);
+        alert('Não foi possível conectar ao servidor VitaMed.');
+    }
 }
+
 function login(role) {
     const account = getAccount();
     currentRole = role;
@@ -241,32 +253,70 @@ $('loginForm').addEventListener('submit', event => {
     submitLogin('idoso');
 });
 
-$('registerForm').addEventListener('submit', event => {
+
+$('registerForm').addEventListener('submit', async event => {
     event.preventDefault();
+
     const password = $('regPass').value;
-    if (password.length < 8 || password !== $('regPass2').value) {
+    const confirmation = $('regPass2').value;
+
+    if (password.length < 8 || password !== confirmation) {
         alert('As senhas devem ter ao menos 8 caracteres e ser iguais.');
         return;
     }
+
     const data = {
-        name: $('regName').value.trim(),
-        role: $('regRole').value,
-        contact: $('regContact').value.trim(),
-        allergies: $('regAllergies').value.trim(),
-        emergency: $('regEmergency').value.trim(),
-        timezone: $('regTimezone').value
+        nome: $('regName').value.trim(),
+        email: $('regContact').value.trim(),
+        senha: password,
+        tipo_usuario: $('regRole').value
     };
-    if (!data.name || !data.contact) {
-        alert('Preencha seu nome e contato.');
+
+    if (!data.nome || !data.email) {
+        alert('Preencha seu nome e e-mail.');
         return;
     }
-    localStorage.setItem(STORAGE.account, JSON.stringify(data));
-    applyTheme(data.theme);
-    demoPassword = password;
-    sessionStorage.setItem('vitamed_demo_password', password);
-    $('loginEmail').value = data.contact;
-    alert('Cadastro demonstrativo criado. Entre com o contato e a senha cadastrada.');
-    backToLogin();
+
+    try {
+        const resposta = await fetch('http://localhost:3000/cadastro', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(resultado.mensagem || 'Não foi possível realizar o cadastro.');
+            return;
+        }
+
+        const account = {
+            name: data.nome,
+            role: data.tipo_usuario,
+            contact: data.email,
+            allergies: $('regAllergies').value.trim(),
+            emergency: $('regEmergency').value.trim(),
+            timezone: $('regTimezone').value
+        };
+
+        localStorage.setItem(STORAGE.account, JSON.stringify(account));
+
+        $('loginEmail').value = data.email;
+        $('loginPass').value = '';
+
+        $('registerForm').reset();
+
+        alert('Cadastro realizado com sucesso! Agora você pode entrar.');
+
+        backToLogin();
+
+    } catch (erro) {
+        console.error('Erro no cadastro:', erro);
+        alert('Não foi possível conectar ao servidor VitaMed. Verifique se ele está iniciado.');
+    }
 });
 
 function resetMedForm() {
@@ -274,43 +324,83 @@ function resetMedForm() {
     $('medId').value = '';
     $('medFormTitle').textContent = 'Cadastrar medicamento';
 }
-$('medForm').addEventListener('submit', event => {
+
+$('medForm').addEventListener('submit', async event => {
     event.preventDefault();
+
     const id = $('medId').value;
     const file = $('medImage').files[0];
-    if (file && !file.type.startsWith('image/')) {
-        alert('Selecione um arquivo de imagem válido.');
+
+    if (file) {
+        alert('O envio de fotos será conectado em uma próxima etapa. Por enquanto, cadastre sem imagem.');
         return;
     }
-    if (file && file.size > 2 * 1024 * 1024) {
-        alert('A imagem deve ter no máximo 2 MB.');
+
+    const account = getAccount();
+
+    if (!account.id) {
+        alert('Não foi possível identificar o usuário. Saia da conta e entre novamente.');
         return;
     }
-    const existing = meds.find(m => m.id == id);
-    const save = image => {
-        const item = {
-            id: id ? Number(id) : Date.now(),
-            name: $('medName').value.trim(),
-            dose: $('medDose').value.trim(),
+
+    const dados = {
+        usuario_id: account.id,
+        nome: $('medName').value.trim(),
+        dosagem: $('medDose').value.trim(),
+        instrucoes: '',
+        quantidade_estoque: Math.max(0, Number($('medStock').value || 0)),
+        estoque_minimo: 0
+    };
+
+    if (!dados.nome || !dados.dosagem) {
+        alert('Preencha o nome e a dosagem do medicamento.');
+        return;
+    }
+
+    try {
+        if (id) {
+            alert('A edição no banco de dados será conectada na próxima etapa. Por enquanto, teste um novo cadastro.');
+            return;
+        }
+
+        const resposta = await fetch('http://localhost:3000/medicamentos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(resultado.mensagem || 'Não foi possível cadastrar o medicamento.');
+            return;
+        }
+
+        const novoMedicamento = {
+            id: resultado.medicamentoId,
+            name: dados.nome,
+            dose: dados.dosagem,
             time: $('medTime').value,
-            stock: Math.max(0, Number($('medStock').value || 0)),
-            image: image !== undefined ? image : (existing?.image || ''),
-            paused: existing?.paused || false
+            stock: dados.quantidade_estoque,
+            image: '',
+            paused: false
         };
-        if (id) meds = meds.map(m => m.id == id ? item : m);
-        else meds.push(item);
+
+        meds.push(novoMedicamento);
         persist();
         resetMedForm();
         renderAll();
-        announce('Medicamento salvo.');
-    };
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = () => save(reader.result);
-        reader.onerror = () => alert('Não foi possível carregar a imagem.');
-        reader.readAsDataURL(file);
-    } else save(undefined);
+        announce('Medicamento salvo no banco de dados!');
+        alert('Medicamento cadastrado com sucesso!');
+
+    } catch (erro) {
+        console.error('Erro ao cadastrar medicamento:', erro);
+        alert('Não foi possível conectar ao servidor VitaMed.');
+    }
 });
+
 function editMed(id) {
     const med = meds.find(m => m.id === id);
     if (!med) return;

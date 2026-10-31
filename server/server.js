@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -44,7 +43,66 @@ app.get('/teste-banco', async (req, res) => {
         });
     }
 });
+//iniciar servidor
+app.post('/login', async (req, res) => {
+    try {
+        const { email, senha, tipo_usuario } = req.body;
+        console.log('A rota de login foi chamada!');
+        console.log('E-mail recebido:', email);
+        console.log('Perfil recebido:', tipo_usuario);
 
+        if (!email || !senha || !tipo_usuario) {
+            return res.status(400).json({
+                mensagem: 'Preencha todos os campos.'
+            });
+        }
+
+        const [usuarios] = await conexao.execute(
+            `SELECT id, nome, email, senha_hash, tipo_usuario
+             FROM usuarios
+             WHERE email = ? AND tipo_usuario = ?`,
+            [email, tipo_usuario]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(401).json({
+                mensagem: 'E-mail, senha ou perfil incorreto.'
+            });
+        }
+
+        const usuario = usuarios[0];
+
+        const senhaCorreta = await bcrypt.compare(
+            senha,
+            usuario.senha_hash
+        );
+        console.log('Usuário encontrado:', usuario.email);
+        console.log('Perfil no banco:', usuario.tipo_usuario);
+        console.log('Senha validada:', senhaCorreta);
+
+        if (!senhaCorreta) {
+            return res.status(401).json({
+                mensagem: 'E-mail, senha ou perfil incorreto.'
+            });
+        }
+
+        return res.json({
+            mensagem: 'Login realizado com sucesso!',
+            usuario: {
+                id: usuario.id,
+                nome: usuario.nome,
+                email: usuario.email,
+                tipo_usuario: usuario.tipo_usuario
+            }
+        });
+
+    } catch (erro) {
+        console.error('Erro no login:', erro);
+        return res.status(500).json({
+            mensagem: 'Erro ao realizar login.'
+        });
+    }
+});
 // Rota para cadastrar usuários
 app.post('/cadastro', async (req, res) => {
     try {
@@ -118,6 +176,67 @@ app.post('/cadastro', async (req, res) => {
         });
     }
 });
+
+
+// Rota para cadastrar medicamentos
+app.post('/medicamentos', async (req, res) => {
+    try {
+        const {
+            usuario_id,
+            nome,
+            dosagem,
+            instrucoes,
+            quantidade_estoque,
+            estoque_minimo
+        } = req.body;
+
+        if (!usuario_id || !nome || !dosagem) {
+            return res.status(400).json({
+                mensagem: 'Informe o usuário, o nome e a dosagem do medicamento.'
+            });
+        }
+
+        // Verificar se o usuário existe
+        const [usuarios] = await conexao.execute(
+            'SELECT id FROM usuarios WHERE id = ?',
+            [usuario_id]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({
+                mensagem: 'Usuário não encontrado.'
+            });
+        }
+
+        // Salvar medicamento no banco
+        const [resultado] = await conexao.execute(
+            `INSERT INTO medicamentos
+            (usuario_id, nome, dosagem, instrucoes, quantidade_estoque, estoque_minimo)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                usuario_id,
+                nome,
+                dosagem,
+                instrucoes || null,
+                quantidade_estoque ?? 0,
+                estoque_minimo ?? 0
+            ]
+        );
+
+        return res.status(201).json({
+            mensagem: 'Medicamento cadastrado com sucesso!',
+            medicamentoId: resultado.insertId
+        });
+
+    } catch (erro) {
+        console.error('Erro ao cadastrar medicamento:', erro);
+
+        return res.status(500).json({
+            mensagem: 'Erro ao cadastrar medicamento.'
+        });
+    }
+});
+
 
 const PORT = process.env.PORT || 3000;
 
