@@ -6,6 +6,12 @@ Projeto da disciplina **Análise e Projeto de Sistemas**, Engenharia de Software
 
 > Este repositório contém o **protótipo navegável** do VitaMed. A documentação de requisitos e a modelagem UML estão no documento do trabalho.
 
+## Demonstração online
+
+**Acesse o protótipo:** https://dudab2.github.io/VitaMed/
+
+Não precisa instalar nada. Os dados ficam salvos só no seu navegador (`localStorage`), e a senha de demonstração aparece na tela de login.
+
 ## Problema
 
 Muitos idosos têm dificuldade para lembrar os horários dos remédios e para distinguir um medicamento do outro, e quem toma vários por dia está mais sujeito a esquecer ou errar uma dose. O VitaMed reúne tudo em um só lugar e dá ao cuidador a visão do que foi tomado. O app não substitui a orientação dos profissionais de saúde: ele organiza a rotina e ajuda a seguir a prescrição médica.
@@ -61,9 +67,13 @@ O público é idoso, então a interface segue os requisitos de usabilidade do pr
 
 ## Como executar
 
+**Online:** acesse https://dudab2.github.io/VitaMed/.
+
+**No seu computador:**
+
 1. Baixe ou clone o repositório:
    ```bash
-   git clone <URL-DO-REPOSITORIO>
+   git clone https://github.com/dudab2/VitaMed.git
    ```
 2. Abra a pasta do projeto.
 3. Dê dois cliques em `index.html` para abrir no navegador (não precisa instalar nada).
