@@ -88,7 +88,6 @@ VitaMed/
 └── README.md
 ```
 
-> Ajuste esta seção para refletir os arquivos reais do seu projeto.
 
 ## Documentação
 
