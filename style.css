@@ -1,4 +1,5 @@
 :root {
+    color-scheme: dark;
     --bg: #0d1b24;
     --panel: #132630;
     --panel2: #192f39;
@@ -8,7 +9,39 @@
     --teal: #4cc1c1;
     --teal2: #2fa9aa;
     --danger: #ff8585;
-    --warning: #ffd27a
+    --warning: #ffd27a;
+    --sidebar: #0a151d;
+    --nav-text: #dce8ee;
+    --input-bg: #0f2029;
+    --input-border: #36515d;
+    --button-ghost: #213944;
+    --notice-bg: #18343d;
+    --notice-text: #d8eef0;
+    --pill-bg: #23434b;
+    --pill-text: #a9eeee
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f3f7fa;
+    --panel: #ffffff;
+    --panel2: #eaf2f6;
+    --line: #d5e1e8;
+    --text: #20323d;
+    --muted: #617784;
+    --teal: #087f8c;
+    --teal2: #066b76;
+    --danger: #b42336;
+    --warning: #9a6700;
+    --sidebar: #e8f0f4;
+    --nav-text: #29434f;
+    --input-bg: #ffffff;
+    --input-border: #bdcdd6;
+    --button-ghost: #e4edf2;
+    --notice-bg: #e8f4f5;
+    --notice-text: #29434f;
+    --pill-bg: #d8eeee;
+    --pill-text: #075e66
 }
 
 * {
@@ -41,7 +74,7 @@ button {
 }
 
 .sidebar {
-    background: #0a151d;
+    background: var(--sidebar);
     border-right: 1px solid var(--line);
     padding: 24px 14px;
     position: sticky;
@@ -78,7 +111,7 @@ button {
     text-align: left;
     background: transparent;
     border: 0;
-    color: #dce8ee;
+    color: var(--nav-text);
     padding: 12px 11px;
     border-radius: 10px;
     margin: 3px 0
@@ -176,7 +209,7 @@ h2 {
 
 label {
     display: block;
-    color: #dce8ee;
+    color: var(--nav-text);
     font-weight: 700;
     margin: 13px 0 7px
 }
@@ -187,8 +220,8 @@ textarea {
     width: 100%;
     padding: 12px 13px;
     border-radius: 10px;
-    border: 1px solid #36515d;
-    background: #0f2029;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
     color: var(--text);
     outline: none
 }
@@ -219,7 +252,7 @@ textarea:focus {
 }
 
 .btn.ghost {
-    background: #213944;
+    background: var(--button-ghost);
     color: var(--text)
 }
 
@@ -251,9 +284,9 @@ a {
 .notice {
     padding: 13px 15px;
     border-radius: 11px;
-    background: #18343d;
+    background: var(--notice-bg);
     border: 1px solid var(--line);
-    color: #d8eef0;
+    color: var(--notice-text);
     margin: 12px 0
 }
 
@@ -286,8 +319,8 @@ th {
     display: inline-block;
     padding: 5px 9px;
     border-radius: 99px;
-    background: #23434b;
-    color: #a9eeee;
+    background: var(--pill-bg);
+    color: var(--pill-text);
     font-size: 12px
 }
 
@@ -495,4 +528,65 @@ select {
     .back-button {
         display: none
     }
+}
+
+:root[data-theme="light"] .nav button:hover,
+:root[data-theme="light"] .nav button.active,
+:root[data-theme="light"] .nav button[aria-current="page"] {
+    background: #d5e9ed;
+    color: #075e66
+}
+
+:root[data-theme="light"] .btn {
+    color: #ffffff;
+    background: #087f8c
+}
+
+:root[data-theme="light"] .btn:hover {
+    background: #066b76
+}
+
+:root[data-theme="light"] .btn.secondary {
+    color: #087f8c;
+    border-color: #087f8c;
+    background: transparent
+}
+
+:root[data-theme="light"] .btn.danger {
+    background: #f8dfe3;
+    color: #8f1d2c
+}
+
+:root[data-theme="light"] .alert {
+    background: #fff7e5
+}
+
+:root[data-theme="light"] .dangerline {
+    background: #fff0f1
+}
+
+:root[data-theme="light"] .med-photo {
+    background: #e3edf2;
+    color: #617784
+}
+
+:root[data-theme="light"] .steps span {
+    background: #d5e1e8
+}
+
+:root[data-theme="light"] .steps span.on {
+    background: var(--teal)
+}
+
+.theme-button {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px
+}
+
+.login-theme {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px
 }

@@ -10,13 +10,15 @@
 
 <body>
     <div id="loginScreen" class="login-wrap">
+        <div class="login-theme"><button class="btn ghost small theme-button" type="button" onclick="toggleTheme()"
+                aria-label="Alternar tema"><span id="loginThemeIcon">☀</span><span id="loginThemeLabel">Tema
+                    claro</span></button></div>
         <div class="card">
             <div class="brand">VitaMed</div>
             <p class="sub">Seus remédios, na hora certa.</p>
-            <form id="loginForm">
-                <label for="loginEmail">E-mail ou telefone</label><input id="loginEmail" type="text"
-                    placeholder="maria@gmail.com" value="maria@gmail.com" required>
-                <label for="loginPass">Senha</label><input id="loginPass" type="password" placeholder="Digite sua senha"
+            <form id="loginForm"> <label for="loginEmail">E-mail ou telefone</label><input id="loginEmail" type="text"
+                    placeholder="maria@email.com" value="maria@email.com" required> <label
+                    for="loginPass">Senha</label><input id="loginPass" type="password" placeholder="Digite sua senha"
                     required>
                 <div class="actions"><button class="btn" style="flex:1" type="submit">Entrar como idoso</button><button
                         class="btn secondary" style="flex:1" type="button" onclick="submitLogin('cuidador')">Entrar como
@@ -34,19 +36,15 @@
             <div class="brand">VitaMed</div>
             <p class="tagline">Seus remédios, na hora certa.</p>
             <div class="nav-label">Menu principal</div>
-            <nav class="nav" id="nav">
-                <button data-screen="home" onclick="showScreen('home')">⌂ <span>Início / Notificações</span></button>
-                <button data-screen="meds" onclick="showScreen('meds')">▣ <span>Meus remédios</span></button>
-                <button data-screen="history" onclick="showScreen('history')">▤ <span>Histórico e
-                        relatório</span></button>
-                <button data-screen="care" onclick="showScreen('care')">♡ <span>Painel do cuidador</span></button>
-                <button data-screen="stock" onclick="showScreen('stock')">⚑ <span>Estoque baixo</span></button>
-            </nav>
+            <nav class="nav" id="nav"> <button data-screen="home" onclick="showScreen('home')">⌂ <span>Início /
+                        Notificações</span></button> <button data-screen="meds" onclick="showScreen('meds')">▣
+                    <span>Meus remédios</span></button> <button data-screen="history" onclick="showScreen('history')">▤
+                    <span>Histórico e relatório</span></button> <button data-screen="care"
+                    onclick="showScreen('care')">♡ <span>Painel do cuidador</span></button> <button data-screen="stock"
+                    onclick="showScreen('stock')">⚑ <span>Estoque baixo</span></button> </nav>
             <div class="nav-label">Conta</div>
-            <nav class="nav">
-                <button onclick="showScreen('account')">⚙ <span>Minha conta</span></button>
-                <button onclick="logout()">↪ <span>Sair</span></button>
-            </nav>
+            <nav class="nav"> <button onclick="showScreen('account')">⚙ <span>Minha conta</span></button> <button
+                    onclick="logout()">↪ <span>Sair</span></button> </nav>
         </aside>
         <main>
             <div id="statusMessage" class="sr-only" role="status" aria-live="polite"></div>
@@ -58,9 +56,13 @@
                         <p class="sub" id="pageSub">Acompanhe seus horários e confirme suas doses.</p>
                     </div>
                 </div>
-                <div class="user-chip" id="roleChip">Perfil: idoso</div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button
+                        class="btn ghost small theme-button" type="button" onclick="toggleTheme()"
+                        aria-label="Alternar tema"><span id="appThemeIcon">☀</span><span id="appThemeLabel">Tema
+                            claro</span></button>
+                    <div class="user-chip" id="roleChip">Perfil: idoso</div>
+                </div>
             </div>
-
             <section id="home" class="screen active">
                 <div class="grid3">
                     <div class="stat"><strong id="todayCount">2</strong><span>Doses previstas hoje</span></div>
@@ -82,12 +84,10 @@
                     <div id="todayList"></div>
                 </div>
             </section>
-
             <section id="meds" class="screen">
                 <div class="card">
                     <h2 id="medFormTitle">Cadastrar medicamento</h2>
-                    <form id="medForm">
-                        <input type="hidden" id="medId">
+                    <form id="medForm"> <input type="hidden" id="medId">
                         <div class="grid">
                             <div><label>Nome do remédio</label><input id="medName" required
                                     placeholder="Ex.: Losartana"></div>
@@ -97,8 +97,7 @@
                             <div><label>Horário</label><input id="medTime" type="time" value="08:00" required></div>
                             <div><label>Quantidade em estoque</label><input id="medStock" type="number" min="0"
                                     value="30"></div>
-                        </div>
-                        <label>Foto (opcional)</label><input id="medImage" type="file" accept="image/*">
+                        </div> <label>Foto (opcional)</label><input id="medImage" type="file" accept="image/*">
                         <div class="actions"><button class="btn" type="submit">Salvar medicamento</button><button
                                 class="btn ghost" type="button" onclick="resetMedForm()">Limpar</button></div>
                     </form>
@@ -108,8 +107,6 @@
                     <div id="medTable"></div>
                 </div>
             </section>
-
-
             <section id="register" class="screen">
                 <div class="card">
                     <h2>Criar conta — idoso ou cuidador</h2>
@@ -120,27 +117,25 @@
                                     <option value="idoso">Idoso</option>
                                     <option value="cuidador">Cuidador</option>
                                 </select></div>
-                        </div>
-                        <label>E-mail ou telefone</label><input id="regContact" required placeholder="maria@gmail.com">
+                        </div> <label>E-mail ou telefone</label><input id="regContact" required
+                            placeholder="maria@email.com">
                         <div class="grid">
                             <div><label>Senha</label><input id="regPass" type="password" minlength="8" required></div>
                             <div><label>Confirmar senha</label><input id="regPass2" type="password" minlength="8"
                                     required></div>
-                        </div>
-                        <label>Alergias</label><input id="regAllergies"
-                            placeholder="Informe alergias ou escreva 'Nenhuma'">
-                        <label>Fuso horário</label><select id="regTimezone">
+                        </div> <label>Alergias</label><input id="regAllergies"
+                            placeholder="Informe alergias ou escreva 'Nenhuma'"> <label>Fuso horário</label><select
+                            id="regTimezone">
                             <option>America/Sao_Paulo</option>
                             <option>America/Manaus</option>
                             <option>America/Rio_Branco</option>
-                        </select>
-                        <label>Contato de emergência</label><input id="regEmergency" placeholder="Nome e telefone">
+                        </select> <label>Contato de emergência</label><input id="regEmergency"
+                            placeholder="Nome e telefone">
                         <div class="actions"><button class="btn" type="submit">Criar minha conta</button><button
                                 class="btn ghost" type="button" onclick="backToLogin()">Voltar ao login</button></div>
                     </form>
                 </div>
             </section>
-
             <section id="forgot" class="screen">
                 <div class="card">
                     <h2>Recuperar senha</h2>
@@ -148,7 +143,7 @@
                             id="step3"></span></div>
                     <div id="forgotStep1">
                         <p class="sub">Passo 1 de 3 — confirme seu contato.</p><label>E-mail ou telefone
-                            cadastrado</label><input id="recoveryContact" placeholder="maria@gmail.com">
+                            cadastrado</label><input id="recoveryContact" placeholder="maria@email.com">
                         <div class="actions"><button class="btn" onclick="forgotNext(2)">Enviar código</button></div>
                     </div>
                     <div id="forgotStep2" class="hidden">
@@ -166,7 +161,6 @@
                     <p><a href="#" onclick="backToLogin();return false">Voltar ao login</a></p>
                 </div>
             </section>
-
             <section id="history" class="screen">
                 <div class="card">
                     <h2>Histórico de adesão</h2>
@@ -176,7 +170,6 @@
                     </div>
                 </div>
             </section>
-
             <section id="care" class="screen">
                 <div class="grid3">
                     <div class="stat"><strong id="carePending">0</strong><span>Doses sem confirmação</span></div>
@@ -193,7 +186,6 @@
                         onclick="showScreen('account')">Editar dados da conta</button>
                 </div>
             </section>
-
             <section id="stock" class="screen">
                 <div class="card">
                     <h2>Alerta de estoque baixo</h2>
@@ -201,12 +193,10 @@
                     <div id="stockList"></div>
                 </div>
             </section>
-
             <section id="account" class="screen">
                 <div class="card">
                     <h2>Minha conta</h2>
-                    <form id="accountForm">
-                        <label>Nome completo</label><input id="accountName" placeholder="Seu nome">
+                    <form id="accountForm"> <label>Nome completo</label><input id="accountName" placeholder="Seu nome">
                         <div class="grid">
                             <div><label>Perfil</label><select id="accountRole">
                                     <option value="idoso">Idoso</option>
@@ -217,10 +207,12 @@
                                     <option>America/Manaus</option>
                                     <option>America/Rio_Branco</option>
                                 </select></div>
-                        </div>
-                        <label>Alergias</label><input id="allergies"
-                            placeholder="Informe alergias ou escreva 'Nenhuma'">
-                        <label>Contato de emergência</label><input id="emergency" placeholder="Nome e telefone">
+                        </div> <label>Aparência</label><select id="themePreference" onchange="setTheme(this.value)">
+                            <option value="dark">Tema escuro</option>
+                            <option value="light">Tema claro</option>
+                        </select> <label>Alergias</label><input id="allergies"
+                            placeholder="Informe alergias ou escreva 'Nenhuma'"> <label>Contato de
+                            emergência</label><input id="emergency" placeholder="Nome e telefone">
                         <div class="actions"><button class="btn">Salvar dados</button></div>
                     </form>
                 </div>
