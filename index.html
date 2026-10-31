@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitaMed - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>VitaMed</h1>
+        <p class="subtitulo">
+            Seus remédios, na hora certa.
+        </p>
+
+        <form>
+            <div class="campo">
+                <label for="email">E-mail ou telefone</label>
+                <input
+                    type="text"
+                    id="email"
+                    placeholder="maria@email.com"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input
+                    type="password"
+                    id="senha"
+                    required
+                >
+            </div>
+
+            <button type="button" class="idoso"
+                onclick="entrar('idoso')">
+                Entrar como idoso
+            </button>
+
+            <button type="button" class="cuidador"
+                onclick="entrar('cuidador')">
+                Entrar como cuidador
+            </button>
+
+        </form>
+
+        <a href="#" class="esqueci">
+            Esqueci minha senha
+        </a>
+
+        <p class="demonstracao">
+            Demonstração: a senha é 12345678.
+            Cinco erros bloqueiam o acesso por 15 minutos.
+        </p>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
