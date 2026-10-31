@@ -48,6 +48,24 @@ const roleScreens = {
 };
 
 function $(id) { return document.getElementById(id); }
+const THEME_STORAGE = 'vitamed_theme_preference';
+function applyTheme(theme) {
+    const selected = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', selected);
+    localStorage.setItem(THEME_STORAGE, selected);
+    const nextLabel = selected === 'dark' ? 'Tema claro' : 'Tema escuro';
+    const nextIcon = selected === 'dark' ? '☀' : '☾';
+    ['loginThemeLabel', 'appThemeLabel'].forEach(id => { if ($(id)) $(id).textContent = nextLabel; });
+    ['loginThemeIcon', 'appThemeIcon'].forEach(id => { if ($(id)) $(id).textContent = nextIcon; });
+    const preference = $('themePreference');
+    if (preference) preference.value = selected;
+}
+function setTheme(theme) { applyTheme(theme); }
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -243,6 +261,7 @@ $('registerForm').addEventListener('submit', event => {
         return;
     }
     localStorage.setItem(STORAGE.account, JSON.stringify(data));
+    applyTheme(data.theme);
     demoPassword = password;
     sessionStorage.setItem('vitamed_demo_password', password);
     $('loginEmail').value = data.contact;
@@ -411,9 +430,11 @@ $('accountForm').addEventListener('submit', event => {
         role: $('accountRole').value,
         allergies: $('allergies').value.trim(),
         emergency: $('emergency').value.trim(),
-        timezone: $('timezone').value
+        timezone: $('timezone').value,
+        theme: $('themePreference').value
     };
     localStorage.setItem(STORAGE.account, JSON.stringify(data));
+    applyTheme(data.theme);
     currentRole = data.role;
     sessionStorage.setItem('vitamed_role', currentRole);
     $('roleChip').textContent = `Perfil: ${currentRole}`;
@@ -428,9 +449,10 @@ $('accountForm').addEventListener('submit', event => {
     $('allergies').value = account.allergies || '';
     $('emergency').value = account.emergency || '';
     $('timezone').value = account.timezone || 'America/Sao_Paulo';
+    applyTheme(localStorage.getItem(THEME_STORAGE) || 'dark');
 
     sessionStorage.removeItem('vitamed_session');
     sessionStorage.removeItem('vitamed_role');
-    $('loginEmail').value = account.contact || 'maria@gmail.com';
+    $('loginEmail').value = account.contact || 'maria@email.com';
     configureRoleNavigation();
 })();
