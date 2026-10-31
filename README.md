@@ -2,7 +2,7 @@
 
 Aplicativo para organizar a rotina de medicamentos de idosos, com acompanhamento por cuidadores e familiares. O app avisa no horário de cada dose, mostrando o nome, a dosagem e a **foto da caixa** do remédio, para que a pessoa o reconheça pela imagem.
 
-Projeto da disciplina **Análise e Projeto de Sistemas**, Engenharia de Software, UDF – Centro Universitário do Distrito Federal (2025.2).
+Projeto da disciplina **Análise e Projeto de Sistemas**, Engenharia de Software, UDF – Centro Universitário do Distrito Federal (2026.2).
 
 > Este repositório contém o **protótipo navegável** do VitaMed. A documentação de requisitos e a modelagem UML estão no documento do trabalho.
 
@@ -88,7 +88,6 @@ VitaMed/
 └── README.md
 ```
 
-> Ajuste esta seção para refletir os arquivos reais do seu projeto.
 
 ## Documentação
 
