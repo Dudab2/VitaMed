@@ -1,4 +1,5 @@
 'use strict';
+
 const STORAGE = {
     meds: 'vitamed_meds_v2',
     logs: 'vitamed_logs_v2',
@@ -428,7 +429,6 @@ $('accountForm').addEventListener('submit', event => {
     $('emergency').value = account.emergency || '';
     $('timezone').value = account.timezone || 'America/Sao_Paulo';
 
-    // A sessão não é restaurada automaticamente: é necessário entrar novamente.
     sessionStorage.removeItem('vitamed_session');
     sessionStorage.removeItem('vitamed_role');
     $('loginEmail').value = account.contact || 'maria@email.com';
