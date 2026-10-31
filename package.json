@@ -1,0 +1,31 @@
+{
+  "name": "vitamed",
+  "version": "1.0.0",
+  "description": "Aplicativo para organizar a rotina de medicamentos de idosos, com acompanhamento por cuidadores e familiares. O app avisa no horário de cada dose, mostrando o nome, a dosagem e a **foto da caixa** do remédio, para que a pessoa o reconheça pela imagem.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dudab2/VitaMed.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dudab2/VitaMed/issues"
+  },
+  "homepage": "https://github.com/Dudab2/VitaMed#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "mysql2": "^3.24.6"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  }
+}
