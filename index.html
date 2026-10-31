@@ -1,62 +1,233 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitaMed - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <title>VitaMed — Protótipo navegável</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>VitaMed</h1>
-        <p class="subtitulo">
-            Seus remédios, na hora certa.
-        </p>
-
-        <form>
-            <div class="campo">
-                <label for="email">E-mail ou telefone</label>
-                <input
-                    type="text"
-                    id="email"
-                    placeholder="maria@email.com"
-                    required
-                >
-            </div>
-
-            <div class="campo">
-                <label for="senha">Senha</label>
-                <input
-                    type="password"
-                    id="senha"
-                    required
-                >
-            </div>
-
-            <button type="button" class="idoso"
-                onclick="entrar('idoso')">
-                Entrar como idoso
-            </button>
-
-            <button type="button" class="cuidador"
-                onclick="entrar('cuidador')">
-                Entrar como cuidador
-            </button>
-
-        </form>
-
-        <a href="#" class="esqueci">
-            Esqueci minha senha
-        </a>
-
-        <p class="demonstracao">
-            Demonstração: a senha é 12345678.
-            Cinco erros bloqueiam o acesso por 15 minutos.
-        </p>
-
+    <div id="loginScreen" class="login-wrap">
+        <div class="card">
+            <div class="brand">VitaMed</div>
+            <p class="sub">Seus remédios, na hora certa.</p>
+            <form id="loginForm">
+                <label for="loginEmail">E-mail ou telefone</label><input id="loginEmail" type="text"
+                    placeholder="maria@email.com" value="maria@email.com" required>
+                <label for="loginPass">Senha</label><input id="loginPass" type="password" placeholder="Digite sua senha"
+                    required>
+                <div class="actions"><button class="btn" style="flex:1" type="submit">Entrar como idoso</button><button
+                        class="btn secondary" style="flex:1" type="button" onclick="login('cuidador')">Entrar como
+                        cuidador</button></div>
+            </form>
+            <p><a href="#" onclick="showScreen('forgot');return false">Esqueci minha senha</a></p>
+            <p class="muted">Ainda não tem cadastro? <a href="#" onclick="showScreen('register');return false">Criar
+                    conta</a></p>
+            <p class="muted" style="font-size:13px">Demonstração: senha 12345678. Protótipo local, sem autenticação
+                real.</p>
+        </div>
     </div>
+    <div id="app" class="app hidden">
+        <aside class="sidebar">
+            <div class="brand">VitaMed</div>
+            <p class="tagline">Seus remédios, na hora certa.</p>
+            <div class="nav-label">Menu principal</div>
+            <nav class="nav" id="nav">
+                <button data-screen="home" onclick="showScreen('home')">⌂ <span>Início / Notificações</span></button>
+                <button data-screen="meds" onclick="showScreen('meds')">▣ <span>Meus remédios</span></button>
+                <button data-screen="history" onclick="showScreen('history')">▤ <span>Histórico e
+                        relatório</span></button>
+                <button data-screen="care" onclick="showScreen('care')">♡ <span>Painel do cuidador</span></button>
+                <button data-screen="stock" onclick="showScreen('stock')">⚑ <span>Estoque baixo</span></button>
+            </nav>
+            <div class="nav-label">Conta</div>
+            <nav class="nav">
+                <button onclick="showScreen('account')">⚙ <span>Minha conta</span></button>
+                <button onclick="logout()">↪ <span>Sair</span></button>
+            </nav>
+        </aside>
+        <main>
+            <div id="statusMessage" class="sr-only" role="status" aria-live="polite"></div>
+            <div class="topbar">
+                <div class="topbar-heading"><button class="btn ghost small back-button" type="button" onclick="goBack()"
+                        aria-label="Voltar à página anterior">← Voltar</button>
+                    <div>
+                        <h1 id="pageTitle">Início</h1>
+                        <p class="sub" id="pageSub">Acompanhe seus horários e confirme suas doses.</p>
+                    </div>
+                </div>
+                <div class="user-chip" id="roleChip">Perfil: idoso</div>
+            </div>
 
+            <section id="home" class="screen active">
+                <div class="grid3">
+                    <div class="stat"><strong id="todayCount">2</strong><span>Doses previstas hoje</span></div>
+                    <div class="stat"><strong id="takenCount">0</strong><span>Doses confirmadas</span></div>
+                    <div class="stat"><strong id="pendingCount">2</strong><span>Doses pendentes</span></div>
+                </div>
+                <div class="card" style="margin-top:18px">
+                    <h2>Próxima dose</h2>
+                    <div class="med-photo" id="homePhoto">💊</div>
+                    <div class="muted" id="homeDoseLabel">08:00 · Exemplo de medicamento</div>
+                    <div class="big-dose" id="homeMedName">Losartana 50 mg</div>
+                    <p class="sub">Tome conforme a orientação do seu profissional de saúde.</p>
+                    <div class="actions"><button class="btn" onclick="confirmDose('Tomei')">Tomei</button><button
+                            class="btn secondary" onclick="confirmDose('Adiei')">Adiar 10 min</button><button
+                            class="btn ghost" onclick="confirmDose('Não tomei')">Não tomei</button></div>
+                </div>
+                <div class="card">
+                    <h2>Outros horários de hoje</h2>
+                    <div id="todayList"></div>
+                </div>
+            </section>
+
+            <section id="meds" class="screen">
+                <div class="card">
+                    <h2 id="medFormTitle">Cadastrar medicamento</h2>
+                    <form id="medForm">
+                        <input type="hidden" id="medId">
+                        <div class="grid">
+                            <div><label>Nome do remédio</label><input id="medName" required
+                                    placeholder="Ex.: Losartana"></div>
+                            <div><label>Dosagem</label><input id="medDose" placeholder="Ex.: 50 mg" required></div>
+                        </div>
+                        <div class="grid">
+                            <div><label>Horário</label><input id="medTime" type="time" value="08:00" required></div>
+                            <div><label>Quantidade em estoque</label><input id="medStock" type="number" min="0"
+                                    value="30"></div>
+                        </div>
+                        <label>Foto (opcional)</label><input id="medImage" type="file" accept="image/*">
+                        <div class="actions"><button class="btn" type="submit">Salvar medicamento</button><button
+                                class="btn ghost" type="button" onclick="resetMedForm()">Limpar</button></div>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Lista de remédios</h2>
+                    <div id="medTable"></div>
+                </div>
+            </section>
+
+
+            <section id="register" class="screen">
+                <div class="card">
+                    <h2>Criar conta — idoso ou cuidador</h2>
+                    <form id="registerForm">
+                        <div class="grid">
+                            <div><label>Nome completo</label><input id="regName" required placeholder="Seu nome"></div>
+                            <div><label>Perfil</label><select id="regRole">
+                                    <option value="idoso">Idoso</option>
+                                    <option value="cuidador">Cuidador</option>
+                                </select></div>
+                        </div>
+                        <label>E-mail ou telefone</label><input id="regContact" required placeholder="maria@email.com">
+                        <div class="grid">
+                            <div><label>Senha</label><input id="regPass" type="password" minlength="8" required></div>
+                            <div><label>Confirmar senha</label><input id="regPass2" type="password" minlength="8"
+                                    required></div>
+                        </div>
+                        <label>Alergias</label><input id="regAllergies"
+                            placeholder="Informe alergias ou escreva 'Nenhuma'">
+                        <label>Fuso horário</label><select id="regTimezone">
+                            <option>America/Sao_Paulo</option>
+                            <option>America/Manaus</option>
+                            <option>America/Rio_Branco</option>
+                        </select>
+                        <label>Contato de emergência</label><input id="regEmergency" placeholder="Nome e telefone">
+                        <div class="actions"><button class="btn" type="submit">Criar minha conta</button><button
+                                class="btn ghost" type="button" onclick="backToLogin()">Voltar ao login</button></div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="forgot" class="screen">
+                <div class="card">
+                    <h2>Recuperar senha</h2>
+                    <div class="steps"><span id="step1" class="on"></span><span id="step2"></span><span
+                            id="step3"></span></div>
+                    <div id="forgotStep1">
+                        <p class="sub">Passo 1 de 3 — confirme seu contato.</p><label>E-mail ou telefone
+                            cadastrado</label><input id="recoveryContact" placeholder="maria@email.com">
+                        <div class="actions"><button class="btn" onclick="forgotNext(2)">Enviar código</button></div>
+                    </div>
+                    <div id="forgotStep2" class="hidden">
+                        <p class="sub">Passo 2 de 3 — digite o código de demonstração.</p><label>Código de
+                            verificação</label><input id="recoveryCode" placeholder="123456">
+                        <div class="actions"><button class="btn" onclick="forgotNext(3)">Validar código</button><button
+                                class="btn ghost" onclick="forgotNext(1)">Voltar</button></div>
+                    </div>
+                    <div id="forgotStep3" class="hidden">
+                        <p class="sub">Passo 3 de 3 — crie uma nova senha.</p><label>Nova senha</label><input
+                            id="newPass" type="password" placeholder="Mínimo de 8 caracteres"><label>Confirmar nova
+                            senha</label><input id="confirmPass" type="password">
+                        <div class="actions"><button class="btn" onclick="saveNewPass()">Salvar senha</button></div>
+                    </div>
+                    <p><a href="#" onclick="backToLogin();return false">Voltar ao login</a></p>
+                </div>
+            </section>
+
+            <section id="history" class="screen">
+                <div class="card">
+                    <h2>Histórico de adesão</h2>
+                    <p class="sub">Registro das confirmações realizadas neste protótipo.</p>
+                    <div id="historyTable"></div>
+                    <div class="actions"><button class="btn" onclick="exportPDF()">Exportar relatório em PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="care" class="screen">
+                <div class="grid3">
+                    <div class="stat"><strong id="carePending">0</strong><span>Doses sem confirmação</span></div>
+                    <div class="stat"><strong id="careTaken">0</strong><span>Doses tomadas</span></div>
+                    <div class="stat"><strong id="careLow">0</strong><span>Remédios com estoque baixo</span></div>
+                </div>
+                <div class="card" style="margin-top:18px">
+                    <h2>Alertas do cuidador</h2>
+                    <div id="careAlerts"></div>
+                </div>
+                <div class="card">
+                    <h2>Contato de emergência</h2>
+                    <p id="emergencyInfo" class="sub">Nenhum contato cadastrado.</p><button class="btn secondary"
+                        onclick="showScreen('account')">Editar dados da conta</button>
+                </div>
+            </section>
+
+            <section id="stock" class="screen">
+                <div class="card">
+                    <h2>Alerta de estoque baixo</h2>
+                    <p class="sub">Medicamentos com 5 unidades ou menos.</p>
+                    <div id="stockList"></div>
+                </div>
+            </section>
+
+            <section id="account" class="screen">
+                <div class="card">
+                    <h2>Minha conta</h2>
+                    <form id="accountForm">
+                        <label>Nome completo</label><input id="accountName" placeholder="Seu nome">
+                        <div class="grid">
+                            <div><label>Perfil</label><select id="accountRole">
+                                    <option value="idoso">Idoso</option>
+                                    <option value="cuidador">Cuidador</option>
+                                </select></div>
+                            <div><label>Fuso horário</label><select id="timezone">
+                                    <option>America/Sao_Paulo</option>
+                                    <option>America/Manaus</option>
+                                    <option>America/Rio_Branco</option>
+                                </select></div>
+                        </div>
+                        <label>Alergias</label><input id="allergies"
+                            placeholder="Informe alergias ou escreva 'Nenhuma'">
+                        <label>Contato de emergência</label><input id="emergency" placeholder="Nome e telefone">
+                        <div class="actions"><button class="btn">Salvar dados</button></div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
     <script src="app.js"></script>
 </body>
+
 </html>
