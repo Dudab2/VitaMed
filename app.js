@@ -431,6 +431,6 @@ $('accountForm').addEventListener('submit', event => {
 
     sessionStorage.removeItem('vitamed_session');
     sessionStorage.removeItem('vitamed_role');
-    $('loginEmail').value = account.contact || 'maria@email.com';
+    $('loginEmail').value = account.contact || 'maria@gmail.com';
     configureRoleNavigation();
 })();
