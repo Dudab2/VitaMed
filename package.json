@@ -4,7 +4,8 @@
   "description": "Aplicativo para organizar a rotina de medicamentos de idosos, com acompanhamento por cuidadores e familiares. O app avisa no horário de cada dose, mostrando o nome, a dosagem e a **foto da caixa** do remédio, para que a pessoa o reconheça pela imagem.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "start": "node server/server.js",
+  "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
