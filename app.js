@@ -104,7 +104,7 @@ async function submitLogin(role) {
     }
 
     try {
-        const resposta = await fetch('http://localhost:3000/login', {
+        const resposta = await fetch('https://vitamed.onrender.com/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -278,7 +278,7 @@ $('registerForm').addEventListener('submit', async event => {
     }
 
     try {
-        const resposta = await fetch('http://localhost:3000/cadastro', {
+        const resposta = await fetch('https://vitamed.onrender.com/cadastro', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -363,7 +363,7 @@ $('medForm').addEventListener('submit', async event => {
             return;
         }
 
-        const resposta = await fetch('http://localhost:3000/medicamentos', {
+        const resposta = await fetch('https://vitamed.onrender.com/medicamentos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
