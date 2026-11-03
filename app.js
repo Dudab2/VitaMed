@@ -122,6 +122,12 @@ async function submitLogin(role) {
             alert(resultado.mensagem || 'Não foi possível entrar.');
             return;
         }
+        if (!resultado.token) {
+            alert('O servidor não enviou o token de autenticação.');
+            return;
+        }
+
+        sessionStorage.setItem('vitamed_token', resultado.token);
 
         localStorage.setItem(STORAGE.account, JSON.stringify({
             id: resultado.usuario.id,
@@ -156,6 +162,7 @@ function login(role) {
 function logout() {
     sessionStorage.removeItem('vitamed_session');
     sessionStorage.removeItem('vitamed_role');
+    sessionStorage.removeItem('vitamed_token');
     $('app').classList.add('hidden');
     $('loginScreen').classList.remove('hidden');
     $('loginPass').value = '';
@@ -417,8 +424,20 @@ $('medForm').addEventListener('submit', async event => {
         return;
     }
     try {
+        const token = sessionStorage.getItem('vitamed_token');
+
+        if (!token) {
+            alert('Sua sessão expirou. Saia da conta e entre novamente.');
+            return;
+        }
+
         const resposta = await fetch('https://vitamed.onrender.com/medicamentos', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados)
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(dados)
         });
         const resultado = await resposta.json();
         if (!resposta.ok) { alert(resultado.mensagem || 'Não foi possível cadastrar o medicamento.'); return; }

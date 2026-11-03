@@ -27,6 +27,44 @@ const conexao = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0
 });
+function autenticarToken(req, res, next) {
+    const autorizacao = req.headers['authorization'];
+
+    if (!autorizacao) {
+        return res.status(401).json({
+            mensagem: 'Token de autenticação não informado.'
+        });
+    }
+
+    const partes = autorizacao.split(' ');
+    const esquema = partes[0];
+    const token = partes[1];
+
+    if (esquema !== 'Bearer' || !token) {
+        return res.status(401).json({
+            mensagem: 'Formato do token inválido.'
+        });
+    }
+
+    try {
+        const dados = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        req.usuario = {
+            id: dados.id,
+            role: dados.role
+        };
+
+        next();
+
+    } catch (erro) {
+        return res.status(401).json({
+            mensagem: 'Token inválido ou expirado.'
+        });
+    }
+}
 
 app.get('/', (req, res) => {
     res.send('Servidor VitaMed funcionando!');
@@ -51,7 +89,7 @@ app.get('/teste-banco', async (req, res) => {
         });
     }
 });
-//iniciar servidor
+
 app.post('/login', async (req, res) => {
     try {
         const { email, senha, tipo_usuario } = req.body;
@@ -122,12 +160,12 @@ app.post('/login', async (req, res) => {
         });
     }
 });
-// Rota para cadastrar usuários
+
 app.post('/cadastro', async (req, res) => {
     try {
         const { nome, email, senha, tipo_usuario } = req.body;
 
-        // Validar os campos
+
         if (!nome || !email || !senha || !tipo_usuario) {
             return res.status(400).json({
                 mensagem: 'Preencha todos os campos.'
@@ -146,7 +184,7 @@ app.post('/cadastro', async (req, res) => {
             });
         }
 
-        // Verificar se o e-mail já está cadastrado
+
         const [usuarios] = await conexao.execute(
             'SELECT id FROM usuarios WHERE email = ?',
             [email]
@@ -158,10 +196,10 @@ app.post('/cadastro', async (req, res) => {
             });
         }
 
-        // Proteger a senha
+
         const senhaHash = await bcrypt.hash(senha, 10);
 
-        // Salvar usuário no MySQL
+
         const [resultado] = await conexao.execute(
             `INSERT INTO usuarios
             (nome, email, senha_hash, tipo_usuario)
@@ -169,7 +207,7 @@ app.post('/cadastro', async (req, res) => {
             [nome, email, senhaHash, tipo_usuario]
         );
 
-        // Criar o perfil correspondente
+
         if (tipo_usuario === 'idoso') {
             await conexao.execute(
                 'INSERT INTO idosos (usuario_id) VALUES (?)',
@@ -197,11 +235,10 @@ app.post('/cadastro', async (req, res) => {
 });
 
 
-// Rota para cadastrar medicamentos
-app.post('/medicamentos', async (req, res) => {
+
+app.post('/medicamentos', autenticarToken, async (req, res) => {
     try {
         const {
-            usuario_id,
             nome,
             dosagem,
             instrucoes,
@@ -209,13 +246,15 @@ app.post('/medicamentos', async (req, res) => {
             estoque_minimo
         } = req.body;
 
+        const usuario_id = req.usuario.id;
+
         if (!usuario_id || !nome || !dosagem) {
             return res.status(400).json({
                 mensagem: 'Informe o usuário, o nome e a dosagem do medicamento.'
             });
         }
 
-        // Verificar se o usuário existe
+
         const [usuarios] = await conexao.execute(
             'SELECT id FROM usuarios WHERE id = ?',
             [usuario_id]
@@ -227,7 +266,7 @@ app.post('/medicamentos', async (req, res) => {
             });
         }
 
-        // Salvar medicamento no banco
+
         const [resultado] = await conexao.execute(
             `INSERT INTO medicamentos
             (usuario_id, nome, dosagem, instrucoes, quantidade_estoque, estoque_minimo)
