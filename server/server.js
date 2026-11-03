@@ -362,6 +362,94 @@ app.post('/vinculos/solicitar', autenticarToken, async (req, res) => {
     }
 });
 
+app.get('/vinculos/pendentes', autenticarToken, async (req, res) => {
+    try {
+        if (req.usuario.role !== 'idoso') {
+            return res.status(403).json({
+                mensagem: 'Somente idosos podem consultar solicitações recebidas.'
+            });
+        }
+
+        const [solicitacoes] = await conexao.execute(
+            `SELECT
+                vc.id,
+                vc.cuidador_usuario_id,
+                u.nome AS nome_cuidador,
+                u.email AS email_cuidador,
+                vc.data_vinculo
+             FROM vinculo_cuidador vc
+             INNER JOIN usuarios u
+                ON u.id = vc.cuidador_usuario_id
+             WHERE vc.idoso_usuario_id = ?
+             AND vc.aprovado = 0
+             ORDER BY vc.data_vinculo DESC`,
+            [req.usuario.id]
+        );
+
+        return res.json(solicitacoes);
+
+    } catch (erro) {
+        console.error('Erro ao consultar solicitações:', erro);
+
+        return res.status(500).json({
+            mensagem: 'Erro ao consultar solicitações pendentes.'
+        });
+    }
+});
+
+app.patch('/vinculos/:id/responder', autenticarToken, async (req, res) => {
+    try {
+        if (req.usuario.role !== 'idoso') {
+            return res.status(403).json({
+                mensagem: 'Somente idosos podem responder às solicitações.'
+            });
+        }
+
+        const vinculoId = Number(req.params.id);
+        const { aprovado } = req.body;
+
+        if (!Number.isInteger(vinculoId) || vinculoId <= 0) {
+            return res.status(400).json({
+                mensagem: 'Solicitação inválida.'
+            });
+        }
+
+        if (typeof aprovado !== 'boolean') {
+            return res.status(400).json({
+                mensagem: 'Informe se deseja aceitar ou recusar a solicitação.'
+            });
+        }
+
+        const [resultado] = await conexao.execute(
+            `UPDATE vinculo_cuidador
+             SET aprovado = ?
+             WHERE id = ?
+             AND idoso_usuario_id = ?
+             AND aprovado = 0`,
+            [aprovado ? 1 : 2, vinculoId, req.usuario.id]
+        );
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({
+                mensagem: 'Solicitação não encontrada ou já respondida.'
+            });
+        }
+
+        return res.json({
+            mensagem: aprovado
+                ? 'Solicitação aprovada com sucesso!'
+                : 'Solicitação recusada com sucesso!'
+        });
+
+    } catch (erro) {
+        console.error('Erro ao responder solicitação:', erro);
+
+        return res.status(500).json({
+            mensagem: 'Erro ao responder à solicitação.'
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
