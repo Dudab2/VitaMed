@@ -295,6 +295,72 @@ app.post('/medicamentos', autenticarToken, async (req, res) => {
     }
 });
 
+app.post('/vinculos/solicitar', autenticarToken, async (req, res) => {
+    try {
+        if (req.usuario.role !== 'cuidador') {
+            return res.status(403).json({
+                mensagem: 'Somente cuidadores podem solicitar vínculos.'
+            });
+        }
+
+        const { email_idoso } = req.body;
+
+        if (!email_idoso) {
+            return res.status(400).json({
+                mensagem: 'Informe o e-mail do idoso.'
+            });
+        }
+
+        const [idososEncontrados] = await conexao.execute(
+            `SELECT u.id
+             FROM usuarios u
+             INNER JOIN idosos i ON i.usuario_id = u.id
+             WHERE u.email = ? AND u.tipo_usuario = 'idoso'`,
+            [email_idoso]
+        );
+
+        if (idososEncontrados.length === 0) {
+            return res.status(404).json({
+                mensagem: 'Nenhum idoso encontrado com esse e-mail.'
+            });
+        }
+
+        const idosoId = idososEncontrados[0].id;
+        const cuidadorId = req.usuario.id;
+
+        const [vinculosExistentes] = await conexao.execute(
+            `SELECT id, aprovado
+             FROM vinculo_cuidador
+             WHERE idoso_usuario_id = ?
+             AND cuidador_usuario_id = ?`,
+            [idosoId, cuidadorId]
+        );
+
+        if (vinculosExistentes.length > 0) {
+            return res.status(409).json({
+                mensagem: 'Já existe uma solicitação ou vínculo entre essas contas.'
+            });
+        }
+
+        await conexao.execute(
+            `INSERT INTO vinculo_cuidador
+             (idoso_usuario_id, cuidador_usuario_id, aprovado)
+             VALUES (?, ?, 0)`,
+            [idosoId, cuidadorId]
+        );
+
+        return res.status(201).json({
+            mensagem: 'Solicitação de vínculo enviada com sucesso!'
+        });
+
+    } catch (erro) {
+        console.error('Erro ao solicitar vínculo:', erro);
+
+        return res.status(500).json({
+            mensagem: 'Erro ao enviar solicitação de vínculo.'
+        });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 
