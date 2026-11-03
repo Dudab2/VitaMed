@@ -1,34 +1,38 @@
 # VitaMed 💊
 
-Aplicativo para organizar a rotina de medicamentos de idosos, com acompanhamento por cuidadores e familiares. O sistema permite cadastrar medicamentos, consultar informações e acompanhar os horários das doses.
+Aplicação web desenvolvida para auxiliar idosos na organização e no acompanhamento de suas rotinas de medicamentos, permitindo também o acompanhamento por cuidadores e familiares.
 
-O VitaMed busca facilitar a identificação dos medicamentos por meio de imagens das caixas, lembretes e uma interface acessível, contribuindo para uma rotina mais organizada e segura.
+O VitaMed tem como objetivo facilitar a identificação dos medicamentos por meio de fotos das embalagens, organizar os horários das doses e contribuir para uma administração mais segura dos medicamentos.
 
-Projeto desenvolvido para a disciplina **Análise e Projeto de Sistemas**, do curso de Engenharia de Software, UDF – Centro Universitário do Distrito Federal (2026.2).
+Projeto desenvolvido para a disciplina **Análise e Projeto de Sistemas**, do curso de Engenharia de Software, do UDF – Centro Universitário do Distrito Federal, no semestre 2026.2.
 
 ## Demonstração online
 
 **Acesse o projeto:** https://dudab2.github.io/VitaMed/
 
-## Problema
+O projeto possui uma interface web e um backend desenvolvido para processar as operações do sistema e realizar a comunicação com o banco de dados.
 
-Muitos idosos têm dificuldade para lembrar os horários dos medicamentos e distinguir um remédio do outro. Pessoas que utilizam vários medicamentos diariamente estão mais sujeitas a esquecer ou confundir doses.
+## Problema identificado
 
-O VitaMed busca solucionar esse problema reunindo os medicamentos em um único sistema, facilitando o acompanhamento da rotina pelo próprio idoso e por seus cuidadores.
+Muitos idosos apresentam dificuldades para lembrar os horários dos medicamentos e distinguir um remédio do outro. Essa dificuldade pode aumentar quando existe a necessidade de utilizar vários medicamentos ao longo do dia.
 
-O aplicativo não substitui a orientação dos profissionais de saúde. Seu objetivo é auxiliar na organização e no acompanhamento da prescrição médica.
+O VitaMed busca minimizar esse problema por meio de uma plataforma que centraliza as informações dos medicamentos, facilita a identificação visual das embalagens e permite o acompanhamento das doses por cuidadores e familiares.
 
-Alinhado ao **ODS 3 – Saúde e Bem-Estar**.
+O sistema é uma ferramenta de apoio à organização da rotina medicamentosa e não substitui prescrições ou orientações de profissionais de saúde.
 
-## Atores
+O projeto está alinhado ao **ODS 3 – Saúde e Bem-Estar**, que busca assegurar uma vida saudável e promover o bem-estar para todos.
 
-| Ator | Papel |
+## Atores do sistema
+
+| Ator | Descrição |
 |---|---|
-| Idoso | Cadastra seus medicamentos, recebe lembretes e confirma as doses |
-| Cuidador | Acompanha os medicamentos e as doses do idoso vinculado |
-| Relógio do Sistema | Controla os horários e dispara os lembretes |
+| Idoso | Usuário responsável pelo acompanhamento de seus medicamentos, recebimento de lembretes e confirmação das doses. |
+| Cuidador | Usuário que acompanha a rotina medicamentosa do idoso vinculado e recebe alertas sobre doses não confirmadas. |
+| Relógio do Sistema | Responsável pelo controle dos horários e pelo disparo dos lembretes programados. |
 
-## Funcionalidades (casos de uso)
+## Funcionalidades do sistema
+
+O VitaMed contempla 15 casos de uso que representam as principais funcionalidades previstas para o sistema.
 
 | UC | Funcionalidade |
 |---|---|
@@ -37,9 +41,9 @@ Alinhado ao **ODS 3 – Saúde e Bem-Estar**.
 | UC03 | Gerenciar perfis e conta |
 | UC04 | Cadastrar medicamento |
 | UC05 | Anexar foto do medicamento |
-| UC06 | Gerenciar medicamento |
+| UC06 | Gerenciar medicamento (editar, pausar, reativar e excluir) |
 | UC07 | Disparar lembrete |
-| UC08 | Confirmar uso do remédio |
+| UC08 | Confirmar uso do medicamento |
 | UC09 | Adiar lembrete (soneca) |
 | UC10 | Registrar dose não tomada |
 | UC11 | Receber alerta de dose não tomada |
@@ -48,81 +52,95 @@ Alinhado ao **ODS 3 – Saúde e Bem-Estar**.
 | UC14 | Verificar registros de dose |
 | UC15 | Alertar estoque baixo |
 
-*Os casos de uso representam o escopo funcional planejado para o projeto. Nem todos estão implementados na versão atual.*
+*As funcionalidades descritas representam o escopo do projeto. A implementação está sendo realizada gradualmente.*
 
-## Regras de negócio em destaque
+## Regras de negócio
 
-- Uma dose não confirmada em **15 minutos** é marcada como não confirmada e o cuidador é alertado uma única vez por dose.
-- Cada dose pode ser adiada no máximo **2 vezes**.
-- O alerta de estoque baixo dispara quando restam doses para no máximo **3 dias**.
-- Após **5 tentativas** de login incorretas, o acesso é bloqueado por 15 minutos.
-- Um medicamento só pode ser excluído se não houver dose pendente no dia.
-- A senha deve ter no mínimo 8 caracteres, com letras e números.
+Entre as principais regras de negócio definidas para o VitaMed, destacam-se:
 
-## Acessibilidade
+- **RN03 e RN23:** uma dose não confirmada após 15 minutos deve ser registrada como não confirmada, gerando um alerta ao cuidador uma única vez por dose.
+- **RN04:** cada lembrete pode ser adiado no máximo duas vezes.
+- **RN09:** um medicamento só pode ser excluído quando não houver dose pendente no dia.
+- **RN12:** o sistema deve emitir um alerta quando o estoque de medicamentos for suficiente para, no máximo, três dias.
+- **RN14:** após cinco tentativas incorretas de login, o acesso deve ser bloqueado durante 15 minutos.
+- **RN25:** a senha deve possuir, no mínimo, oito caracteres, incluindo letras e números.
 
-Como o público-alvo é composto principalmente por idosos, o sistema considera requisitos específicos de acessibilidade e usabilidade:
+## Acessibilidade e usabilidade
 
-- Fontes grandes e legíveis.
-- Alto contraste entre os elementos.
+Considerando que o público-alvo é composto principalmente por pessoas idosas, o desenvolvimento da interface considera requisitos específicos de acessibilidade e usabilidade.
+
+Entre os principais critérios estão:
+
+- Fontes grandes e de fácil leitura.
+- Alto contraste entre textos e elementos visuais.
 - Botões grandes e de fácil identificação.
-- Poucos elementos por tela.
-- Ações principais realizadas em até 3 toques.
+- Organização simples das informações.
+- Redução da quantidade de elementos por tela.
+- Realização das principais ações em até três toques.
+
+Esses critérios buscam proporcionar uma experiência mais intuitiva e acessível aos usuários.
 
 ## Tecnologias utilizadas
 
 **Frontend**
-- HTML5
-- CSS3
-- JavaScript
+- HTML5 – estrutura das páginas.
+- CSS3 – estilização e organização visual.
+- JavaScript – implementação das funcionalidades e interações da interface.
 
 **Backend**
-- Node.js
-- Express
-- MySQL2
-- bcrypt
-- dotenv
-- CORS
+- Node.js – ambiente de execução JavaScript.
+- Express – framework utilizado para criação das rotas e da API.
+- MySQL2 – comunicação com o banco de dados MySQL.
+- bcrypt – criptografia de senhas por meio de hash.
+- dotenv – gerenciamento de variáveis de ambiente.
+- CORS – configuração de acesso entre diferentes origens.
 
 **Banco de dados**
-- MySQL
-- Aiven Cloud
+- MySQL – armazenamento das informações do sistema.
 
 **Hospedagem**
-- GitHub Pages (interface web)
-- Render (backend)
+- GitHub Pages – disponibilização da interface web.
 
 ## Banco de dados
 
-O VitaMed utiliza um banco de dados MySQL hospedado na plataforma Aiven Cloud.
+O sistema utiliza o banco de dados MySQL para armazenar e organizar as informações necessárias ao seu funcionamento.
 
-O backend é responsável pela comunicação entre a interface e o banco de dados, permitindo o processamento das operações do sistema.
+A comunicação com o banco de dados é realizada pelo backend, desenvolvido em Node.js e Express, utilizando a biblioteca MySQL2.
 
-As senhas dos usuários são protegidas utilizando a biblioteca bcrypt.
+As credenciais de acesso são configuradas por meio de variáveis de ambiente, evitando que informações sensíveis sejam inseridas diretamente no código-fonte.
+
+A biblioteca bcrypt é utilizada para proteger as senhas dos usuários por meio de hash.
 
 ## Como executar o projeto localmente
 
-**1. Clone o repositório:**
+### Pré-requisitos
+
+- Node.js instalado.
+- npm instalado.
+- Acesso ao banco de dados MySQL.
+- Git instalado (opcional).
+
+### 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/dudab2/VitaMed.git
 ```
 
-**2. Entre na pasta do projeto:**
+### 2. Acessar a pasta do projeto
 
 ```bash
 cd VitaMed
 ```
 
-**3. Instale as dependências:**
+### 3. Instalar as dependências
 
 ```bash
 npm install
 ```
 
-**4. Configure as variáveis de ambiente:**
+### 4. Configurar as variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto com as credenciais de conexão do banco de dados:
+Crie um arquivo `.env` na raiz do projeto e configure as informações de conexão com o banco de dados:
 
 ```env
 PORT=3000
@@ -133,7 +151,9 @@ DB_PASSWORD=sua_senha
 DB_NAME=defaultdb
 ```
 
-**5. Inicie o servidor:**
+Substitua os valores de exemplo pelas credenciais correspondentes ao seu banco de dados.
+
+### 5. Iniciar o backend
 
 Na raiz do projeto, execute:
 
@@ -141,11 +161,15 @@ Na raiz do projeto, execute:
 node server/server.js
 ```
 
-**6. Acesse a aplicação:**
+O servidor será iniciado na porta definida nas variáveis de ambiente, conforme a configuração do código.
 
-Abra o frontend no navegador e utilize o endereço configurado para a API do backend.
+### 6. Acessar a aplicação
 
-**Importante:** Não compartilhe o arquivo `.env` nem envie credenciais de acesso ao banco de dados para o GitHub.
+Abra o arquivo `index.html` no navegador ou utilize o ambiente de execução configurado para o frontend.
+
+Verifique se o endereço da API utilizado pelo frontend corresponde ao endereço do backend em execução.
+
+**Importante:** o arquivo `.env` contém informações confidenciais e não deve ser enviado ao GitHub. O arquivo também deve estar incluído no `.gitignore`.
 
 ## Estrutura do projeto
 
@@ -169,9 +193,9 @@ VitaMed/
 └── style.css
 ```
 
-## Documentação acadêmica
+## Documentação do projeto
 
-A documentação completa do projeto inclui:
+A documentação acadêmica do VitaMed contempla as etapas de análise e modelagem do sistema, incluindo:
 
 - 28 requisitos funcionais.
 - 26 requisitos não funcionais.
@@ -179,31 +203,31 @@ A documentação completa do projeto inclui:
 - Diagrama de casos de uso.
 - Descrição dos 15 casos de uso.
 - Diagramas de sequência.
-- Diagramas de classe.
+- Diagrama de classes.
 - Diagramas de atividades.
 - Diagramas de objetos.
 
-## Status do projeto
+## Status do desenvolvimento
 
-- [x] Levantamento dos requisitos funcionais e não funcionais.
+- [x] Levantamento dos requisitos funcionais.
+- [x] Levantamento dos requisitos não funcionais.
 - [x] Definição das regras de negócio.
-- [x] Diagrama de casos de uso.
-- [x] Diagramas de sequência.
+- [x] Elaboração do diagrama de casos de uso.
+- [x] Elaboração dos diagramas de sequência.
 - [x] Desenvolvimento da interface inicial.
 - [x] Implementação inicial do backend com Node.js e Express.
-- [x] Criação da estrutura do banco de dados MySQL.
-- [x] Configuração da conexão com o banco de dados Aiven.
-- [x] Teste de conexão entre backend e banco de dados.
-- [x] Implementação inicial do login.
-- [x] Implementação inicial do cadastro de medicamentos.
-- [ ] Finalização e integração das funcionalidades.
-- [ ] Implementação dos demais casos de uso.
-- [ ] Diagramas de classe, atividades e objetos.
-- [ ] Testes completos do sistema.
+- [x] Configuração da conexão com o banco de dados MySQL.
+- [x] Teste de conexão com o banco de dados.
+- [x] Implementação do login.
+- [x] Implementação do cadastro de medicamentos.
+- [ ] Finalização da integração entre frontend e backend.
+- [ ] Implementação das demais funcionalidades previstas.
+- [ ] Elaboração dos diagramas de classes, atividades e objetos.
+- [ ] Realização dos testes completos do sistema.
 
 ## Equipe
 
-| Nome | Matrícula |
+| Integrante | Matrícula |
 |---|---|
 | Érika Nunes Noleto | 44294450 |
 | Maria Eduarda Gonçalves Rodrigues | 44012055 |
@@ -214,4 +238,4 @@ A documentação completa do projeto inclui:
 
 ## Licença
 
-Projeto acadêmico, sem fins comerciais.
+Projeto acadêmico, desenvolvido para fins educacionais e sem finalidade comercial.
