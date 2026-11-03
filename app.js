@@ -319,96 +319,141 @@ $('registerForm').addEventListener('submit', async event => {
     }
 });
 
+function getMedTimes() {
+    return [...document.querySelectorAll('.med-time-input')].map(input => input.value).filter(Boolean);
+}
+function addMedTime(value = '') {
+    const wrap = $('medTimes');
+    const row = document.createElement('div');
+    row.className = 'time-input-row';
+    const count = wrap.querySelectorAll('.med-time-input').length + 1;
+    const label = document.createElement('label');
+    label.textContent = `Horário ${count}`;
+    const input = document.createElement('input');
+    input.type = 'time';
+    input.className = 'med-time-input';
+    input.value = value;
+    input.required = true;
+    label.htmlFor = `medTimeExtra${Date.now()}${count}`;
+    input.id = label.htmlFor;
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn ghost small';
+    remove.textContent = 'Remover';
+    remove.setAttribute('aria-label', `Remover horário ${count}`);
+    remove.addEventListener('click', () => { row.remove(); renumberMedTimes(); });
+    row.append(label, input, remove);
+    wrap.appendChild(row);
+}
+function renumberMedTimes() {
+    document.querySelectorAll('#medTimes .time-input-row').forEach((row, index) => {
+        const label = row.querySelector('label');
+        const input = row.querySelector('input');
+        label.textContent = `Horário ${index + 1}`;
+        label.htmlFor = input.id;
+    });
+}
+function dateISO(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
 function resetMedForm() {
     $('medForm').reset();
     $('medId').value = '';
+    $('medInstructions').value = '';
     $('medFormTitle').textContent = 'Cadastrar medicamento';
+    $('medTimes').innerHTML = '<div class="time-input-row"><label for="medTime">Horário 1</label><input id="medTime" class="med-time-input" type="time" value="08:00" required></div>';
+    $('medFrequency').value = 'daily';
+    $('weekdayPicker').classList.add('hidden');
+    $('medStartDate').value = dateISO();
+    $('medEndDate').value = '';
+    document.querySelectorAll('input[name="medWeekday"]').forEach(input => { input.checked = false; });
 }
-
+$('medFrequency').addEventListener('change', () => {
+    $('weekdayPicker').classList.toggle('hidden', $('medFrequency').value !== 'weekdays');
+});
 $('medForm').addEventListener('submit', async event => {
     event.preventDefault();
-
     const id = $('medId').value;
     const file = $('medImage').files[0];
-
     if (file) {
         alert('O envio de fotos será conectado em uma próxima etapa. Por enquanto, cadastre sem imagem.');
         return;
     }
-
     const account = getAccount();
-
     if (!account.id) {
         alert('Não foi possível identificar o usuário. Saia da conta e entre novamente.');
         return;
     }
-
+    const times = [...new Set(getMedTimes())].sort();
+    if (!times.length) { alert('Adicione pelo menos um horário.'); return; }
+    const frequency = $('medFrequency').value;
+    const weekdays = [...document.querySelectorAll('input[name="medWeekday"]:checked')].map(input => Number(input.value));
+    if (frequency === 'weekdays' && !weekdays.length) { alert('Selecione pelo menos um dia da semana.'); return; }
+    const startDate = $('medStartDate').value || dateISO();
+    const endDate = $('medEndDate').value || '';
+    if (endDate && endDate < startDate) { alert('A data final não pode ser anterior à data inicial.'); return; }
     const dados = {
         usuario_id: account.id,
         nome: $('medName').value.trim(),
         dosagem: $('medDose').value.trim(),
-        instrucoes: '',
+        instrucoes: $('medInstructions').value.trim(),
         quantidade_estoque: Math.max(0, Number($('medStock').value || 0)),
         estoque_minimo: 0
     };
-
-    if (!dados.nome || !dados.dosagem) {
-        alert('Preencha o nome e a dosagem do medicamento.');
+    if (!dados.nome || !dados.dosagem) { alert('Preencha o nome e a dosagem do medicamento.'); return; }
+    const scheduleData = { times, frequency, weekdays, startDate, endDate };
+    if (id) {
+        const med = meds.find(item => String(item.id) === String(id));
+        if (!med) { alert('Medicamento não encontrado.'); return; }
+        Object.assign(med, {
+            name: dados.nome, dose: dados.dosagem, instructions: dados.instrucoes,
+            stock: dados.quantidade_estoque, ...scheduleData
+        });
+        persist(); resetMedForm(); renderAll(); announce('Medicamento atualizado neste navegador.');
+        alert('Medicamento atualizado. Atenção: esta edição de horários e dados ainda fica salva apenas neste navegador; a sincronização com o banco será implementada depois.');
         return;
     }
-
     try {
-        if (id) {
-            alert('A edição no banco de dados será conectada na próxima etapa. Por enquanto, teste um novo cadastro.');
-            return;
-        }
-
         const resposta = await fetch('https://vitamed.onrender.com/medicamentos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados)
         });
-
         const resultado = await resposta.json();
-
-        if (!resposta.ok) {
-            alert(resultado.mensagem || 'Não foi possível cadastrar o medicamento.');
-            return;
-        }
-
+        if (!resposta.ok) { alert(resultado.mensagem || 'Não foi possível cadastrar o medicamento.'); return; }
         const novoMedicamento = {
-            id: resultado.medicamentoId,
-            name: dados.nome,
-            dose: dados.dosagem,
-            time: $('medTime').value,
-            stock: dados.quantidade_estoque,
-            image: '',
-            paused: false
+            id: resultado.medicamentoId, name: dados.nome, dose: dados.dosagem,
+            time: times[0], ...scheduleData, instructions: dados.instrucoes,
+            stock: dados.quantidade_estoque, image: '', paused: false
         };
-
         meds.push(novoMedicamento);
-        persist();
-        resetMedForm();
-        renderAll();
-        announce('Medicamento salvo no banco de dados!');
-        alert('Medicamento cadastrado com sucesso!');
-
+        persist(); resetMedForm(); renderAll(); announce('Medicamento cadastrado com sucesso!');
+        alert('Medicamento cadastrado! Os dados básicos foram enviados ao servidor; horários, frequência e período do tratamento ficam salvos neste navegador nesta versão.');
     } catch (erro) {
         console.error('Erro ao cadastrar medicamento:', erro);
         alert('Não foi possível conectar ao servidor VitaMed.');
     }
 });
-
 function editMed(id) {
-    const med = meds.find(m => m.id === id);
+    const med = meds.find(m => String(m.id) === String(id));
     if (!med) return;
     $('medId').value = med.id;
     $('medName').value = med.name;
     $('medDose').value = med.dose;
-    $('medTime').value = med.time;
     $('medStock').value = med.stock;
+    $('medInstructions').value = med.instructions || '';
+    $('medTimes').innerHTML = '';
+    (med.times && med.times.length ? med.times : [med.time || '08:00']).forEach((time, index) => {
+        if (index === 0) {
+            $('medTimes').innerHTML = `<div class="time-input-row"><label for="medTime">Horário 1</label><input id="medTime" class="med-time-input" type="time" value="${esc(time)}" required></div>`;
+        } else addMedTime(time);
+    });
+    $('medFrequency').value = med.frequency || 'daily';
+    $('weekdayPicker').classList.toggle('hidden', $('medFrequency').value !== 'weekdays');
+    document.querySelectorAll('input[name="medWeekday"]').forEach(input => { input.checked = (med.weekdays || []).includes(Number(input.value)); });
+    $('medStartDate').value = med.startDate || dateISO();
+    $('medEndDate').value = med.endDate || '';
     $('medFormTitle').textContent = 'Editar medicamento';
     showScreen('meds');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -430,22 +475,60 @@ function togglePause(id) {
     persist();
     renderAll();
 }
-function confirmDose(status) {
-    const med = meds.filter(m => !m.paused).sort((a, b) => a.time.localeCompare(b.time))[0];
-    if (!med) {
-        alert('Cadastre um medicamento ativo primeiro.');
-        return;
+function isScheduledOn(med, isoDate) {
+    if (med.paused) return false;
+    const start = med.startDate || '0000-01-01';
+    if (isoDate < start || (med.endDate && isoDate > med.endDate)) return false;
+    const frequency = med.frequency || 'daily';
+    const date = new Date(`${isoDate}T12:00:00`);
+    if (frequency === 'weekdays') return (med.weekdays || []).includes(date.getDay());
+    if (frequency === 'alternate') {
+        const startDate = new Date(`${start}T12:00:00`);
+        const diff = Math.round((date - startDate) / 86400000);
+        return diff >= 0 && diff % 2 === 0;
     }
+    return true;
+}
+function getTodayOccurrences() {
+    const iso = dateISO();
+    const occurrences = [];
+    meds.filter(med => isScheduledOn(med, iso)).forEach(med => {
+        const times = med.times && med.times.length ? med.times : [med.time].filter(Boolean);
+        times.forEach(time => {
+            const doseKey = `${med.id}|${iso}|${time}`;
+            const recorded = logs.some(log => log.doseKey === doseKey);
+            occurrences.push({ med, time, doseKey, recorded });
+        });
+    });
+    return occurrences.sort((a, b) => a.time.localeCompare(b.time));
+}
+function getNextDose() {
+    const pending = getTodayOccurrences().filter(item => !item.recorded);
+    if (!pending.length) return null;
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return pending.find(item => {
+        const [h, min] = item.time.split(':').map(Number);
+        return h * 60 + min >= nowMinutes;
+    }) || pending[0];
+}
+
+function confirmDose(status) {
+    const occurrence = getNextDose();
+    if (!occurrence) { alert('Não há uma próxima dose pendente cadastrada para hoje.'); return; }
+    const { med, time, doseKey } = occurrence;
+    const now = new Date();
+    const day = dateISO(now);
     logs.unshift({
-        name: med.name, dose: med.dose, time: med.time, status,
-        date: new Date().toLocaleString('pt-BR')
+        doseKey, medId: med.id, name: med.name, dose: med.dose, time, status,
+        day: now.toLocaleDateString('pt-BR'), date: now.toLocaleString('pt-BR')
     });
     if (status === 'Tomei' && med.stock > 0) med.stock--;
-    persist();
-    renderAll();
-    announce(`Registro da dose: ${status}.`);
-    alert(status === 'Adiei' ? 'Dose adiada por 10 minutos (simulação).' : `Registro salvo: ${status}.`);
+    persist(); renderAll(); announce(`Registro da dose de ${med.name}, às ${time}: ${status}.`);
+    if (status === 'Adiei') alert('Dose marcada como adiada. O lembrete automático após 10 minutos ainda não está disponível.');
+    else alert(`Registro salvo: ${status}.`);
 }
+
 function renderAll() {
     renderMeds();
     renderHome();
@@ -455,26 +538,27 @@ function renderAll() {
 }
 function renderMeds() {
     const element = $('medTable');
-    if (!meds.length) {
-        element.innerHTML = '<div class="empty">Nenhum medicamento cadastrado.</div>';
-        return;
-    }
-    element.innerHTML = '<table><thead><tr><th>Medicamento</th><th>Horário</th><th>Estoque</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
-        meds.map(m => `<tr><td><b>${esc(m.name)}</b><br><span class="muted">${esc(m.dose)}</span></td><td>${esc(m.time)}</td><td>${m.stock}</td><td>${m.paused ? '<span class="pill warn">Pausado</span>' : '<span class="pill">Ativo</span>'}</td><td><button class="btn small secondary" onclick="editMed(${Number(m.id)})">Editar</button> <button class="btn small ghost" onclick="togglePause(${Number(m.id)})">${m.paused ? 'Retomar' : 'Pausar'}</button> <button class="btn small danger" onclick="deleteMed(${Number(m.id)})">Excluir</button></td></tr>`).join('') +
-        '</tbody></table>';
+    if (!meds.length) { element.innerHTML = '<div class="empty">Nenhum medicamento cadastrado.</div>'; return; }
+    element.innerHTML = '<table><thead><tr><th>Medicamento</th><th>Horários</th><th>Frequência</th><th>Tratamento</th><th>Estoque</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
+        meds.map(m => {
+            const times = m.times && m.times.length ? m.times : [m.time || '—'];
+            const frequency = m.frequency === 'weekdays' ? `Dias: ${(m.weekdays || []).map(d => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d]).join(', ')}` : m.frequency === 'alternate' ? 'Dia sim, dia não' : 'Todos os dias';
+            const period = `${m.startDate ? m.startDate.split('-').reverse().join('/') : 'Sem início'} até ${m.endDate ? m.endDate.split('-').reverse().join('/') : 'sem data final'}`;
+            return `<tr><td><b>${esc(m.name)}</b><br><span class="muted">${esc(m.dose)}</span></td><td>${times.map(esc).join('<br>')}</td><td>${esc(frequency)}</td><td>${esc(period)}</td><td>${Number(m.stock) || 0}</td><td>${m.paused ? '<span class="pill warn">Pausado</span>' : '<span class="pill">Ativo</span>'}</td><td><button class="btn small secondary" onclick="editMed(${Number(m.id)})">Editar</button> <button class="btn small ghost" onclick="togglePause(${Number(m.id)})">${m.paused ? 'Retomar' : 'Pausar'}</button> <button class="btn small danger" onclick="deleteMed(${Number(m.id)})">Excluir</button></td></tr>`;
+        }).join('') + '</tbody></table>';
 }
 function renderHome() {
-    const active = meds.filter(m => !m.paused).sort((a, b) => a.time.localeCompare(b.time));
-    const med = active[0];
-    $('todayCount').textContent = active.length;
-    $('takenCount').textContent = logs.filter(l => l.status === 'Tomei').length;
-    $('pendingCount').textContent = active.length;
-    $('homeMedName').textContent = med ? `${med.name} ${med.dose}` : 'Nenhuma dose cadastrada';
-    $('homeDoseLabel').textContent = med ? `${med.time} · Próximo horário` : 'Adicione um medicamento em Meus remédios';
+    const occurrences = getTodayOccurrences();
+    const occurrence = getNextDose();
+    const med = occurrence && occurrence.med;
+    $('homeMedName').textContent = med ? `${med.name} ${med.dose}` : (occurrences.length ? 'Todas as doses de hoje foram registradas' : 'Nenhuma dose programada para hoje');
+    $('homeDoseLabel').textContent = occurrence ? `${occurrence.time} · Próxima dose` : '--:--';
+    $('homeInstructions').textContent = med ? (med.instructions || 'Siga a orientação do profissional de saúde responsável pelo tratamento.') : 'Confira seus medicamentos e horários cadastrados.';
     $('homePhoto').innerHTML = med && med.image ? `<img src="${med.image}" alt="Foto de ${esc(med.name)}">` : '💊';
-    $('todayList').innerHTML = active.length
-        ? active.map(item => `<div class="notice">${esc(item.time)} — <b>${esc(item.name)}</b> ${esc(item.dose)}</div>`).join('')
-        : '<div class="empty">Sem doses cadastradas.</div>';
+    document.querySelectorAll('.dose-actions button').forEach(button => { button.disabled = !occurrence; });
+    $('todayList').innerHTML = occurrences.length
+        ? occurrences.map(item => `<div class="notice schedule-item"><span><b>${esc(item.time)}</b> — ${esc(item.med.name)} ${esc(item.med.dose)}</span><span class="pill ${item.recorded ? '' : 'warn'}">${item.recorded ? 'Registrado' : 'Pendente'}</span></div>`).join('')
+        : '<div class="empty">Sem doses programadas para hoje.</div>';
 }
 function renderHistory() {
     const element = $('historyTable');
@@ -532,6 +616,8 @@ $('accountForm').addEventListener('submit', event => {
     alert('Dados salvos neste navegador.');
     renderCare();
 });
+$('medStartDate').value = dateISO();
+
 (function initialize() {
     const account = getAccount();
     $('accountName').value = account.name || '';

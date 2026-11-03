@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitaMed — Protótipo navegável</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-melhorias.css">
 </head>
 
 <body>
@@ -27,8 +28,7 @@
             <p><a href="#" onclick="showScreen('forgot');return false">Esqueci minha senha</a></p>
             <p class="muted">Ainda não tem cadastro? <a href="#" onclick="showScreen('register');return false">Criar
                     conta</a></p>
-            <p class="muted" style="font-size:13px">Demonstração: senha 12345678. Protótipo local, sem autenticação
-                real.</p>
+            <p class="muted" style="font-size:13px">Entre com seu e-mail e senha cadastrados no VitaMed.</p>
         </div>
     </div>
     <div id="app" class="app hidden">
@@ -64,23 +64,21 @@
                 </div>
             </div>
             <section id="home" class="screen active">
-                <div class="grid3">
-                    <div class="stat"><strong id="todayCount">2</strong><span>Doses previstas hoje</span></div>
-                    <div class="stat"><strong id="takenCount">0</strong><span>Doses confirmadas</span></div>
-                    <div class="stat"><strong id="pendingCount">2</strong><span>Doses pendentes</span></div>
-                </div>
-                <div class="card" style="margin-top:18px">
+                <div class="card next-dose-card" style="margin-top:4px">
+                    <p class="eyebrow">SUA ROTINA DE HOJE</p>
                     <h2>Próxima dose</h2>
-                    <div class="med-photo" id="homePhoto">💊</div>
-                    <div class="muted" id="homeDoseLabel">08:00 · Exemplo de medicamento</div>
-                    <div class="big-dose" id="homeMedName">Losartana 50 mg</div>
-                    <p class="sub">Tome conforme a orientação do seu profissional de saúde.</p>
-                    <div class="actions"><button class="btn" onclick="confirmDose('Tomei')">Tomei</button><button
-                            class="btn secondary" onclick="confirmDose('Adiei')">Adiar 10 min</button><button
-                            class="btn ghost" onclick="confirmDose('Não tomei')">Não tomei</button></div>
+                    <div class="dose-time" id="homeDoseLabel">--:--</div>
+                    <div class="med-photo" id="homePhoto" aria-label="Imagem do medicamento">💊</div>
+                    <div class="big-dose" id="homeMedName">Nenhuma dose cadastrada</div>
+                    <p class="sub dose-instructions" id="homeInstructions">Cadastre seus medicamentos em Meus remédios para organizar sua rotina.</p>
+                    <div class="actions dose-actions">
+                        <button class="btn" type="button" onclick="confirmDose('Tomei')">✓ Tomei</button>
+                        <button class="btn secondary" type="button" onclick="confirmDose('Adiei')">Adiar 10 min</button>
+                        <button class="btn ghost" type="button" onclick="confirmDose('Não tomei')">Não tomei</button>
+                    </div>
                 </div>
                 <div class="card">
-                    <h2>Outros horários de hoje</h2>
+                    <div class="section-heading"><h2>Outros horários de hoje</h2><button class="btn secondary small" type="button" onclick="showScreen('meds')">+ Meus remédios</button></div>
                     <div id="todayList"></div>
                 </div>
             </section>
@@ -93,11 +91,39 @@
                                     placeholder="Ex.: Losartana"></div>
                             <div><label>Dosagem</label><input id="medDose" placeholder="Ex.: 50 mg" required></div>
                         </div>
+                        <div class="card schedule-editor">
+                            <h3>Horários das doses</h3>
+                            <p class="muted">Adicione todos os horários em que este medicamento deve ser tomado.</p>
+                            <div id="medTimes" class="time-input-list">
+                                <div class="time-input-row"><label for="medTime">Horário 1</label><input id="medTime" class="med-time-input" type="time" value="08:00" required></div>
+                            </div>
+                            <button class="btn secondary small" type="button" onclick="addMedTime()">+ Adicionar horário</button>
+                        </div>
                         <div class="grid">
-                            <div><label>Horário</label><input id="medTime" type="time" value="08:00" required></div>
-                            <div><label>Quantidade em estoque</label><input id="medStock" type="number" min="0"
-                                    value="30"></div>
-                        </div> <label>Foto (opcional)</label><input id="medImage" type="file" accept="image/*">
+                            <div><label for="medFrequency">Frequência</label><select id="medFrequency">
+                                <option value="daily">Todos os dias</option>
+                                <option value="weekdays">Dias específicos da semana</option>
+                                <option value="alternate">Dia sim, dia não</option>
+                            </select></div>
+                            <div><label for="medStock">Quantidade em estoque</label><input id="medStock" type="number" min="0" value="30"></div>
+                        </div>
+                        <fieldset id="weekdayPicker" class="weekday-picker hidden">
+                            <legend>Em quais dias?</legend>
+                            <label><input type="checkbox" name="medWeekday" value="1"> Segunda</label>
+                            <label><input type="checkbox" name="medWeekday" value="2"> Terça</label>
+                            <label><input type="checkbox" name="medWeekday" value="3"> Quarta</label>
+                            <label><input type="checkbox" name="medWeekday" value="4"> Quinta</label>
+                            <label><input type="checkbox" name="medWeekday" value="5"> Sexta</label>
+                            <label><input type="checkbox" name="medWeekday" value="6"> Sábado</label>
+                            <label><input type="checkbox" name="medWeekday" value="0"> Domingo</label>
+                        </fieldset>
+                        <div class="grid">
+                            <div><label for="medStartDate">Início do tratamento</label><input id="medStartDate" type="date" required></div>
+                            <div><label for="medEndDate">Fim do tratamento (opcional)</label><input id="medEndDate" type="date"></div>
+                        </div>
+                        <label for="medInstructions">Orientação personalizada (opcional)</label>
+                        <textarea id="medInstructions" rows="2" placeholder="Ex.: tomar após o café da manhã"></textarea>
+                        <label for="medImage">Foto (opcional)</label><input id="medImage" type="file" accept="image/*">
                         <div class="actions"><button class="btn" type="submit">Salvar medicamento</button><button
                                 class="btn ghost" type="button" onclick="resetMedForm()">Limpar</button></div>
                     </form>

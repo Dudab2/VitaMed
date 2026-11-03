@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -54,9 +55,6 @@ app.get('/teste-banco', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { email, senha, tipo_usuario } = req.body;
-        console.log('A rota de login foi chamada!');
-        console.log('E-mail recebido:', email);
-        console.log('Perfil recebido:', tipo_usuario);
 
         if (!email || !senha || !tipo_usuario) {
             return res.status(400).json({
@@ -83,9 +81,6 @@ app.post('/login', async (req, res) => {
             senha,
             usuario.senha_hash
         );
-        console.log('Usuário encontrado:', usuario.email);
-        console.log('Perfil no banco:', usuario.tipo_usuario);
-        console.log('Senha validada:', senhaCorreta);
 
         if (!senhaCorreta) {
             return res.status(401).json({
@@ -93,8 +88,24 @@ app.post('/login', async (req, res) => {
             });
         }
 
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET não configurado.');
+        }
+
+        const token = jwt.sign(
+            {
+                id: usuario.id,
+                role: usuario.tipo_usuario
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '8h'
+            }
+        );
+
         return res.json({
             mensagem: 'Login realizado com sucesso!',
+            token,
             usuario: {
                 id: usuario.id,
                 nome: usuario.nome,
@@ -105,6 +116,7 @@ app.post('/login', async (req, res) => {
 
     } catch (erro) {
         console.error('Erro no login:', erro);
+
         return res.status(500).json({
             mensagem: 'Erro ao realizar login.'
         });
